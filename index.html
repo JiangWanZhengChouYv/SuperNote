@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperNote - 好用的记事本</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .note-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .btn-shadow {
+                box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 头部 -->
+        <header class="mb-6 text-center">
+            <h1 class="text-4xl font-bold text-dark mb-2">SuperNote</h1>
+            <p class="text-gray-600">一个好用的在线记事本</p>
+        </header>
+
+        <!-- 工具栏 -->
+        <div class="bg-white rounded-lg p-3 mb-4 note-shadow flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="boldBtn" class="px-3 py-1 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fa fa-bold"></i>
+                </button>
+                <button id="italicBtn" class="px-3 py-1 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fa fa-italic"></i>
+                </button>
+                <button id="underlineBtn" class="px-3 py-1 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">
+                    <i class="fa fa-underline"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-300"></div>
+                <button id="saveBtn" class="px-4 py-1 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors btn-shadow">
+                    <i class="fa fa-save mr-1"></i> 保存
+                </button>
+                <button id="clearBtn" class="px-4 py-1 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors">
+                    <i class="fa fa-trash mr-1"></i> 清空
+                </button>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="charCount" class="text-gray-500 text-sm">0 字符</span>
+            </div>
+        </div>
+
+        <!-- 编辑器 -->
+        <div class="bg-white rounded-lg p-6 mb-6 note-shadow">
+            <textarea 
+                id="noteContent" 
+                class="w-full h-96 p-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none text-lg" 
+                placeholder="开始输入你的笔记..."></textarea>
+        </div>
+
+        <!-- 底部信息 -->
+        <footer class="text-center text-gray-500 text-sm">
+            <p>SuperNote © 2026 | 本地存储，安全可靠</p>
+        </footer>
+    </div>
+
+    <!-- 通知组件 -->
+    <div id="notification" class="fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50"></div>
+
+    <script>
+        // 元素引用
+        const noteContent = document.getElementById('noteContent');
+        const saveBtn = document.getElementById('saveBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const underlineBtn = document.getElementById('underlineBtn');
+        const charCount = document.getElementById('charCount');
+        const notification = document.getElementById('notification');
+
+        // 初始化：从本地存储加载笔记
+        function init() {
+            const savedNote = localStorage.getItem('supernote-content');
+            if (savedNote) {
+                noteContent.value = savedNote;
+                updateCharCount();
+            }
+        }
+
+        // 保存笔记到本地存储
+        function saveNote() {
+            localStorage.setItem('supernote-content', noteContent.value);
+            showNotification('笔记已保存', 'success');
+        }
+
+        // 清空笔记
+        function clearNote() {
+            if (confirm('确定要清空笔记吗？此操作不可恢复。')) {
+                noteContent.value = '';
+                localStorage.removeItem('supernote-content');
+                updateCharCount();
+                showNotification('笔记已清空', 'info');
+            }
+        }
+
+        // 格式化文本
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            noteContent.focus();
+        }
+
+        // 更新字符计数
+        function updateCharCount() {
+            const count = noteContent.value.length;
+            charCount.textContent = `${count} 字符`;
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            // 设置通知样式
+            notification.textContent = message;
+            
+            // 根据类型设置不同颜色
+            notification.className = 'fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 z-50';
+            
+            if (type === 'success') {
+                notification.classList.add('bg-green-500', 'text-white');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500', 'text-white');
+            } else {
+                notification.classList.add('bg-blue-500', 'text-white');
+            }
+
+            // 3秒后隐藏通知
+            setTimeout(() => {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 事件监听器
+        saveBtn.addEventListener('click', saveNote);
+        clearBtn.addEventListener('click', clearNote);
+        boldBtn.addEventListener('click', () => formatText('bold'));
+        italicBtn.addEventListener('click', () => formatText('italic'));
+        underlineBtn.addEventListener('click', () => formatText('underline'));
+        noteContent.addEventListener('input', updateCharCount);
+
+        // 自动保存功能（每30秒）
+        setInterval(() => {
+            const currentContent = noteContent.value;
+            const savedContent = localStorage.getItem('supernote-content');
+            
+            if (currentContent !== savedContent) {
+                saveNote();
+            }
+        }, 30000);
+
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
