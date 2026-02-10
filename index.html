@@ -416,6 +416,128 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
+        /* 记账表单 */
+        .expense-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .expense-form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .expense-form-item label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        
+        .expense-input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .expense-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .expense-select {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-family: inherit;
+            background-color: white;
+        }
+        
+        .expense-select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .expense-textarea {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .expense-textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* 笔记类型标识 */
+        .note-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .note-badge {
+            background-color: #e0e7ff;
+            color: #4f46e5;
+        }
+        
+        .expense-badge {
+            background-color: #dcfce7;
+            color: #10b981;
+        }
+        
+        .expense-note {
+            border-left: 4px solid #10b981;
+        }
+        
+        /* 新建笔记类型选择 */
+        .new-note-menu {
+            position: absolute;
+            bottom: 80px;
+            left: 1rem;
+            right: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 0.5rem;
+            display: none;
+            z-index: 10;
+        }
+        
+        .new-note-menu.show {
+            display: block;
+        }
+        
+        .new-note-option {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background: none;
+            text-align: left;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .new-note-option:hover {
+            background-color: #f1f5f9;
+        }
+        
         /* 底部 */
         footer {
             text-align: center;
@@ -523,10 +645,20 @@
                 <!-- 笔记项将通过 JavaScript 动态添加 -->
             </div>
             
-            <button id="newNoteBtn" class="new-note-btn">
-                <span>+</span>
-                <span>新建笔记</span>
-            </button>
+            <div class="new-note-section">
+                <div class="new-note-menu" id="newNoteMenu">
+                    <button class="new-note-option" onclick="createNewNote('note')">
+                        <span>普通笔记</span>
+                    </button>
+                    <button class="new-note-option" onclick="createNewNote('expense')">
+                        <span>记账笔记</span>
+                    </button>
+                </div>
+                <button id="newNoteBtn" class="new-note-btn">
+                    <span>+</span>
+                    <span>新建笔记</span>
+                </button>
+            </div>
         </div>
         
         <!-- 主内容区 -->
@@ -620,6 +752,7 @@
         const notification = document.getElementById('notification');
         const notesList = document.getElementById('notesList');
         const newNoteBtn = document.getElementById('newNoteBtn');
+        const newNoteMenu = document.getElementById('newNoteMenu');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
         const exportBtn = document.getElementById('exportBtn');
@@ -636,6 +769,13 @@
                 const savedNotes = localStorage.getItem('supernote-notes');
                 if (savedNotes) {
                     notes = JSON.parse(savedNotes);
+                    
+                    // 确保所有笔记都有类型属性
+                    notes = notes.map(note => ({
+                        ...note,
+                        type: note.type || 'note'
+                    }));
+                    
                     if (notes.length > 0) {
                         currentNoteId = notes[0].id;
                         loadNote(currentNoteId);
@@ -655,34 +795,62 @@
         }
 
         // 创建新笔记
-        function createNewNote() {
+        function createNewNote(type = 'note') {
             // 创建前保存当前笔记
             if (currentNoteId) {
                 const currentNoteIndex = notes.findIndex(n => n.id === currentNoteId);
                 if (currentNoteIndex !== -1) {
-                    notes[currentNoteIndex] = {
-                        ...notes[currentNoteIndex],
-                        title: noteTitle.value || '无标题',
-                        content: noteContent.value,
-                        lastModified: new Date().toISOString()
-                    };
+                    const currentNote = notes[currentNoteIndex];
+                    if (currentNote.type === 'expense') {
+                        notes[currentNoteIndex] = {
+                            ...currentNote,
+                            title: document.getElementById('expenseTitle')?.value || '无标题',
+                            amount: document.getElementById('expenseAmount')?.value || '',
+                            category: document.getElementById('expenseCategory')?.value || '其他',
+                            date: document.getElementById('expenseDate')?.value || new Date().toISOString().split('T')[0],
+                            description: document.getElementById('expenseDescription')?.value || '',
+                            lastModified: new Date().toISOString()
+                        };
+                    } else {
+                        notes[currentNoteIndex] = {
+                            ...currentNote,
+                            title: document.getElementById('noteTitle')?.value || '无标题',
+                            content: document.getElementById('noteContent')?.value || '',
+                            lastModified: new Date().toISOString()
+                        };
+                    }
                     saveNotes();
                 }
             }
             
-            const newNote = {
-                id: Date.now().toString(),
-                title: '新笔记',
-                content: '',
-                lastModified: new Date().toISOString()
-            };
+            let newNote;
+            if (type === 'expense') {
+                newNote = {
+                    id: Date.now().toString(),
+                    type: 'expense',
+                    title: '新记账',
+                    amount: '',
+                    category: '其他',
+                    date: new Date().toISOString().split('T')[0],
+                    description: '',
+                    lastModified: new Date().toISOString()
+                };
+            } else {
+                newNote = {
+                    id: Date.now().toString(),
+                    type: 'note',
+                    title: '新笔记',
+                    content: '',
+                    lastModified: new Date().toISOString()
+                };
+            }
             
             notes.unshift(newNote);
             currentNoteId = newNote.id;
             loadNote(currentNoteId);
             saveNotes();
             renderNotesList();
-            showNotification('新笔记已创建', 'success');
+            showNotification(`${type === 'expense' ? '新记账' : '新笔记'}已创建`, 'success');
         }
 
         // 加载笔记
@@ -691,24 +859,128 @@
             if (currentNoteId && currentNoteId !== noteId) {
                 const currentNoteIndex = notes.findIndex(n => n.id === currentNoteId);
                 if (currentNoteIndex !== -1) {
-                    notes[currentNoteIndex] = {
-                        ...notes[currentNoteIndex],
-                        title: noteTitle.value || '无标题',
-                        content: noteContent.value,
-                        lastModified: new Date().toISOString()
-                    };
+                    const currentNote = notes[currentNoteIndex];
+                    if (currentNote.type === 'expense') {
+                        notes[currentNoteIndex] = {
+                            ...currentNote,
+                            title: document.getElementById('expenseTitle')?.value || '无标题',
+                            amount: document.getElementById('expenseAmount')?.value || '',
+                            category: document.getElementById('expenseCategory')?.value || '其他',
+                            date: document.getElementById('expenseDate')?.value || new Date().toISOString().split('T')[0],
+                            description: document.getElementById('expenseDescription')?.value || '',
+                            lastModified: new Date().toISOString()
+                        };
+                    } else {
+                        notes[currentNoteIndex] = {
+                            ...currentNote,
+                            title: document.getElementById('noteTitle')?.value || '无标题',
+                            content: document.getElementById('noteContent')?.value || '',
+                            lastModified: new Date().toISOString()
+                        };
+                    }
                     saveNotes();
                 }
             }
             
             const note = notes.find(n => n.id === noteId);
             if (note) {
-                noteTitle.value = note.title;
-                noteContent.value = note.content;
                 currentNoteId = noteId;
+                
+                // 显示对应的编辑界面
+                if (note.type === 'expense') {
+                    showExpenseEditor(note);
+                } else {
+                    showNoteEditor(note);
+                }
+                
                 updateCharCount();
                 renderNotesList();
             }
+        }
+
+        // 显示普通笔记编辑器
+        function showNoteEditor(note) {
+            const editorContainer = document.querySelector('.editor-container');
+            editorContainer.innerHTML = `
+                <input 
+                    type="text" 
+                    id="noteTitle" 
+                    class="note-title-input" 
+                    placeholder="输入笔记标题..."
+                    value="${note.title || '无标题'}"
+                >
+                <textarea 
+                    id="noteContent" 
+                    class="editor" 
+                    placeholder="开始输入你的笔记..."
+                >${note.content || ''}</textarea>
+            `;
+            
+            // 重新绑定事件监听器
+            document.getElementById('noteContent').addEventListener('input', updateCharCount);
+            document.getElementById('noteTitle').addEventListener('input', updateCharCount);
+        }
+
+        // 显示记账笔记编辑器
+        function showExpenseEditor(note) {
+            const editorContainer = document.querySelector('.editor-container');
+            editorContainer.innerHTML = `
+                <input 
+                    type="text" 
+                    id="expenseTitle" 
+                    class="note-title-input" 
+                    placeholder="输入记账标题..."
+                    value="${note.title || '无标题'}"
+                >
+                <div class="expense-form">
+                    <div class="expense-form-item">
+                        <label for="expenseAmount">金额</label>
+                        <input 
+                            type="number" 
+                            id="expenseAmount" 
+                            class="expense-input" 
+                            placeholder="0.00" 
+                            step="0.01" 
+                            min="0"
+                            value="${note.amount || ''}"
+                        >
+                    </div>
+                    <div class="expense-form-item">
+                        <label for="expenseCategory">分类</label>
+                        <select id="expenseCategory" class="expense-select">
+                            <option value="餐饮" ${note.category === '餐饮' ? 'selected' : ''}>餐饮</option>
+                            <option value="交通" ${note.category === '交通' ? 'selected' : ''}>交通</option>
+                            <option value="购物" ${note.category === '购物' ? 'selected' : ''}>购物</option>
+                            <option value="娱乐" ${note.category === '娱乐' ? 'selected' : ''}>娱乐</option>
+                            <option value="医疗" ${note.category === '医疗' ? 'selected' : ''}>医疗</option>
+                            <option value="教育" ${note.category === '教育' ? 'selected' : ''}>教育</option>
+                            <option value="其他" ${note.category === '其他' ? 'selected' : ''}>其他</option>
+                        </select>
+                    </div>
+                    <div class="expense-form-item">
+                        <label for="expenseDate">日期</label>
+                        <input 
+                            type="date" 
+                            id="expenseDate" 
+                            class="expense-input"
+                            value="${note.date || new Date().toISOString().split('T')[0]}"
+                        >
+                    </div>
+                    <div class="expense-form-item">
+                        <label for="expenseDescription">描述</label>
+                        <textarea 
+                            id="expenseDescription" 
+                            class="expense-textarea" 
+                            placeholder="添加描述..."
+                        >${note.description || ''}</textarea>
+                    </div>
+                </div>
+            `;
+            
+            // 重新绑定事件监听器
+            document.getElementById('expenseAmount').addEventListener('input', updateCharCount);
+            document.getElementById('expenseTitle').addEventListener('input', updateCharCount);
+            document.getElementById('expenseDescription').addEventListener('input', updateCharCount);
         }
 
         // 保存笔记
@@ -717,15 +989,28 @@
                 if (currentNoteId) {
                     const noteIndex = notes.findIndex(n => n.id === currentNoteId);
                     if (noteIndex !== -1) {
-                        notes[noteIndex] = {
-                            ...notes[noteIndex],
-                            title: noteTitle.value || '无标题',
-                            content: noteContent.value,
-                            lastModified: new Date().toISOString()
-                        };
+                        const note = notes[noteIndex];
+                        if (note.type === 'expense') {
+                            notes[noteIndex] = {
+                                ...note,
+                                title: document.getElementById('expenseTitle')?.value || '无标题',
+                                amount: document.getElementById('expenseAmount')?.value || '',
+                                category: document.getElementById('expenseCategory')?.value || '其他',
+                                date: document.getElementById('expenseDate')?.value || new Date().toISOString().split('T')[0],
+                                description: document.getElementById('expenseDescription')?.value || '',
+                                lastModified: new Date().toISOString()
+                            };
+                        } else {
+                            notes[noteIndex] = {
+                                ...note,
+                                title: document.getElementById('noteTitle')?.value || '无标题',
+                                content: document.getElementById('noteContent')?.value || '',
+                                lastModified: new Date().toISOString()
+                            };
+                        }
                         saveNotes();
                         renderNotesList();
-                        showNotification('笔记已保存', 'success');
+                        showNotification(`${note.type === 'expense' ? '记账' : '笔记'}已保存`, 'success');
                     }
                 }
             } catch (error) {
@@ -750,16 +1035,29 @@
                     if (currentNoteId) {
                         const noteIndex = notes.findIndex(n => n.id === currentNoteId);
                         if (noteIndex !== -1) {
-                            notes[noteIndex] = {
-                                ...notes[noteIndex],
-                                title: '无标题',
-                                content: '',
-                                lastModified: new Date().toISOString()
-                            };
+                            const note = notes[noteIndex];
+                            if (note.type === 'expense') {
+                                notes[noteIndex] = {
+                                    ...note,
+                                    title: '无标题',
+                                    amount: '',
+                                    category: '其他',
+                                    date: new Date().toISOString().split('T')[0],
+                                    description: '',
+                                    lastModified: new Date().toISOString()
+                                };
+                            } else {
+                                notes[noteIndex] = {
+                                    ...note,
+                                    title: '无标题',
+                                    content: '',
+                                    lastModified: new Date().toISOString()
+                                };
+                            }
                             loadNote(currentNoteId);
                             saveNotes();
                             renderNotesList();
-                            showNotification('笔记已清空', 'info');
+                            showNotification(`${note.type === 'expense' ? '记账' : '笔记'}已清空`, 'info');
                         }
                     }
                 } catch (error) {
@@ -803,17 +1101,25 @@
             
             notes.forEach(note => {
                 const noteItem = document.createElement('div');
-                noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
+                noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''} ${note.type === 'expense' ? 'expense-note' : ''}`;
                 noteItem.onclick = () => loadNote(note.id);
                 
                 const title = note.title || '无标题';
-                const preview = note.content.substring(0, 50) + (note.content.length > 50 ? '...' : '');
+                let preview = '';
+                if (note.type === 'expense') {
+                    preview = `¥${note.amount || '0.00'} · ${note.category || '其他'} · ${note.date || ''}`;
+                } else {
+                    preview = note.content?.substring(0, 50) + (note.content?.length > 50 ? '...' : '') || '';
+                }
                 const date = new Date(note.lastModified).toLocaleString();
                 
                 noteItem.innerHTML = `
                     <button class="delete-note-btn" onclick="event.stopPropagation(); deleteNote('${note.id}')">
                         ×
                     </button>
+                    <div class="note-type-badge ${note.type === 'expense' ? 'expense-badge' : 'note-badge'}">
+                        ${note.type === 'expense' ? '记账' : '笔记'}
+                    </div>
                     <div class="note-title">${title}</div>
                     <div class="note-preview">${preview}</div>
                     <div class="note-date">${date}</div>
@@ -825,7 +1131,20 @@
 
         // 更新字符计数
         function updateCharCount() {
-            const count = noteContent.value.length;
+            let count = 0;
+            const currentNote = notes.find(n => n.id === currentNoteId);
+            
+            if (currentNote) {
+                if (currentNote.type === 'expense') {
+                    const amount = document.getElementById('expenseAmount')?.value || '';
+                    const description = document.getElementById('expenseDescription')?.value || '';
+                    count = amount.length + description.length;
+                } else {
+                    const content = document.getElementById('noteContent')?.value || '';
+                    count = content.length;
+                }
+            }
+            
             charCount.textContent = `${count} 字符`;
         }
 
@@ -857,19 +1176,32 @@
                 if (currentNoteId) {
                     const currentNoteIndex = notes.findIndex(n => n.id === currentNoteId);
                     if (currentNoteIndex !== -1) {
-                        notes[currentNoteIndex] = {
-                            ...notes[currentNoteIndex],
-                            title: noteTitle.value || '无标题',
-                            content: noteContent.value,
-                            lastModified: new Date().toISOString()
-                        };
+                        const note = notes[currentNoteIndex];
+                        if (note.type === 'expense') {
+                            notes[currentNoteIndex] = {
+                                ...note,
+                                title: document.getElementById('expenseTitle')?.value || '无标题',
+                                amount: document.getElementById('expenseAmount')?.value || '',
+                                category: document.getElementById('expenseCategory')?.value || '其他',
+                                date: document.getElementById('expenseDate')?.value || new Date().toISOString().split('T')[0],
+                                description: document.getElementById('expenseDescription')?.value || '',
+                                lastModified: new Date().toISOString()
+                            };
+                        } else {
+                            notes[currentNoteIndex] = {
+                                ...note,
+                                title: document.getElementById('noteTitle')?.value || '无标题',
+                                content: document.getElementById('noteContent')?.value || '',
+                                lastModified: new Date().toISOString()
+                            };
+                        }
                         saveNotes();
                     }
                 }
                 
                 // 创建导出数据
                 const exportData = {
-                    version: 'pre-1.0',
+                    version: '1.0',
                     exportDate: new Date().toISOString(),
                     notes: notes
                 };
@@ -910,9 +1242,23 @@
                         
                         // 验证导入数据格式
                         if (importData.notes && Array.isArray(importData.notes)) {
+                            // 处理导入的笔记，确保每个笔记都有必要的字段
+                            const processedNotes = importData.notes.map(note => ({
+                                ...note,
+                                id: note.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                                type: note.type || 'note',
+                                title: note.title || note.name || '无标题',
+                                content: note.content || '',
+                                amount: note.amount || '',
+                                category: note.category || '其他',
+                                date: note.date || new Date().toISOString().split('T')[0],
+                                description: note.description || '',
+                                lastModified: note.lastModified || new Date().toISOString()
+                            }));
+                            
                             // 确认导入
-                            if (confirm(`确定要导入 ${importData.notes.length} 个笔记吗？这将替换当前所有笔记。`)) {
-                                notes = importData.notes;
+                            if (confirm(`确定要导入 ${processedNotes.length} 个笔记吗？这将替换当前所有笔记。`)) {
+                                notes = processedNotes;
                                 saveNotes();
                                 
                                 if (notes.length > 0) {
@@ -947,9 +1293,21 @@
         // 事件监听器
         saveBtn.addEventListener('click', saveNote);
         clearBtn.addEventListener('click', clearNote);
-        newNoteBtn.addEventListener('click', createNewNote);
         noteContent.addEventListener('input', updateCharCount);
         noteTitle.addEventListener('input', updateCharCount);
+        
+        // 新建笔记按钮事件监听器
+        newNoteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            newNoteMenu.classList.toggle('show');
+        });
+        
+        // 点击菜单外部关闭菜单
+        document.addEventListener('click', (e) => {
+            if (!newNoteBtn.contains(e.target) && !newNoteMenu.contains(e.target)) {
+                newNoteMenu.classList.remove('show');
+            }
+        });
         
         // 设置界面事件监听器
         settingsBtn.addEventListener('click', showSettings);
@@ -971,10 +1329,33 @@
                 if (currentNoteId) {
                     const noteIndex = notes.findIndex(n => n.id === currentNoteId);
                     if (noteIndex !== -1) {
-                        const currentTitle = noteTitle.value || '无标题';
-                        const currentContent = noteContent.value;
+                        const note = notes[noteIndex];
+                        let shouldSave = false;
                         
-                        if (notes[noteIndex].title !== currentTitle || notes[noteIndex].content !== currentContent) {
+                        if (note.type === 'expense') {
+                            const currentTitle = document.getElementById('expenseTitle')?.value || '无标题';
+                            const currentAmount = document.getElementById('expenseAmount')?.value || '';
+                            const currentCategory = document.getElementById('expenseCategory')?.value || '其他';
+                            const currentDate = document.getElementById('expenseDate')?.value || new Date().toISOString().split('T')[0];
+                            const currentDescription = document.getElementById('expenseDescription')?.value || '';
+                            
+                            if (note.title !== currentTitle || 
+                                note.amount !== currentAmount || 
+                                note.category !== currentCategory || 
+                                note.date !== currentDate || 
+                                note.description !== currentDescription) {
+                                shouldSave = true;
+                            }
+                        } else {
+                            const currentTitle = document.getElementById('noteTitle')?.value || '无标题';
+                            const currentContent = document.getElementById('noteContent')?.value || '';
+                            
+                            if (note.title !== currentTitle || note.content !== currentContent) {
+                                shouldSave = true;
+                            }
+                        }
+                        
+                        if (shouldSave) {
                             saveNote();
                         }
                     }
