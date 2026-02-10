@@ -19,28 +19,161 @@
             color: #1e293b;
         }
         
-        /* 容器 */
-        .container {
-            max-width: 64rem;
-            margin: 0 auto;
-            padding: 2rem 1rem;
+        /* 主容器 */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
         }
         
-        /* 头部 */
-        header {
-            text-align: center;
-            margin-bottom: 1.5rem;
+        /* 侧边栏 */
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            position: relative;
         }
         
-        header h1 {
-            font-size: 2.5rem;
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 1.5rem;
             font-weight: bold;
             color: #1e293b;
-            margin-bottom: 0.5rem;
         }
         
-        header p {
+        .sidebar-header p {
+            font-size: 0.875rem;
             color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        /* 笔记列表 */
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+            padding-bottom: 80px; /* 为底部按钮留出空间 */
+        }
+        
+        /* 新建笔记按钮 */
+        .new-note-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 1rem;
+            padding: 0.75rem;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .note-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        
+        .note-item:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        
+        .note-item.active {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+        
+        .note-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .note-preview {
+            font-size: 0.875rem;
+            color: #64748b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .note-date {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+        
+        .delete-note-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+        
+        .note-item:hover .delete-note-btn {
+            opacity: 1;
+        }
+        
+        .delete-note-btn:hover {
+            background-color: #fee2e2;
+        }
+        
+        /* 新建笔记按钮 */
+        .new-note-btn {
+            margin: 1rem;
+            padding: 0.75rem;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .new-note-btn:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            overflow-y: auto;
         }
         
         /* 工具栏 */
@@ -79,12 +212,6 @@
             background-color: #f1f5f9;
         }
         
-        .divider {
-            height: 1.5rem;
-            width: 1px;
-            background-color: #e2e8f0;
-        }
-        
         .save-btn {
             background-color: #4f46e5 !important;
             color: white !important;
@@ -104,9 +231,141 @@
             background-color: #dc2626 !important;
         }
         
+        .settings-btn:hover {
+            background-color: #f1f5f9;
+        }
+        
         .char-count {
             color: #64748b;
             font-size: 0.875rem;
+        }
+        
+        /* 设置界面 */
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .settings-modal {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .settings-header h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        
+        .close-settings-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+        }
+        
+        .close-settings-btn:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+        
+        .settings-section h3 {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        
+        .settings-item {
+            margin-bottom: 1.5rem;
+        }
+        
+        .settings-item label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+        
+        .settings-btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .settings-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .export-btn {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .export-btn:hover {
+            background-color: #4338ca;
+        }
+        
+        .import-btn {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .import-btn:hover {
+            background-color: #059669;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .settings-info {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.5rem;
         }
         
         /* 编辑器 */
@@ -116,11 +375,31 @@
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .note-title-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+            font-family: inherit;
+        }
+        
+        .note-title-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
         .editor {
             width: 100%;
-            min-height: 24rem;
+            min-height: 30rem;
             padding: 1rem;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
@@ -128,6 +407,7 @@
             font-size: 1.125rem;
             font-family: inherit;
             line-height: 1.5;
+            flex: 1;
         }
         
         .editor:focus {
@@ -141,6 +421,8 @@
             text-align: center;
             color: #64748b;
             font-size: 0.875rem;
+            margin-top: auto;
+            padding-top: 1rem;
         }
         
         /* 通知 */
@@ -176,13 +458,40 @@
         }
         
         /* 响应式设计 */
-        @media (max-width: 640px) {
-            .container {
-                padding: 1rem;
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
             }
             
-            header h1 {
-                font-size: 2rem;
+            .sidebar {
+                width: 100%;
+                max-height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .notes-list {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 0.5rem;
+            }
+            
+            .note-item {
+                min-width: 200px;
+                margin-right: 0.5rem;
+                margin-bottom: 0;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 1rem;
             }
             
             .toolbar {
@@ -202,81 +511,257 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 头部 -->
-        <header>
-            <h1>SuperNote</h1>
-            <p>一个好用的在线记事本</p>
-        </header>
-
-        <!-- 工具栏 -->
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>SuperNote</h1>
+                <p>笔记列表</p>
+            </div>
+            
+            <div class="notes-list" id="notesList">
+                <!-- 笔记项将通过 JavaScript 动态添加 -->
+            </div>
+            
+            <button id="newNoteBtn" class="new-note-btn">
+                <span>+</span>
+                <span>新建笔记</span>
+            </button>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 工具栏 -->
         <div class="toolbar">
             <div class="toolbar-left">
                 <button id="saveBtn" class="save-btn">保存</button>
                 <button id="clearBtn" class="clear-btn">清空</button>
+                <div class="divider"></div>
+                <button id="settingsBtn" class="settings-btn">设置</button>
             </div>
             <div class="toolbar-right">
                 <span id="charCount" class="char-count">0 字符</span>
             </div>
         </div>
 
-        <!-- 编辑器 -->
-        <div class="editor-container">
-            <textarea 
-                id="noteContent" 
-                class="editor" 
-                placeholder="开始输入你的笔记..."></textarea>
-        </div>
+            <!-- 编辑器 -->
+            <div class="editor-container">
+                <input 
+                    type="text" 
+                    id="noteTitle" 
+                    class="note-title-input" 
+                    placeholder="输入笔记标题..."
+                >
+                <textarea 
+                    id="noteContent" 
+                    class="editor" 
+                    placeholder="开始输入你的笔记..."
+                ></textarea>
+            </div>
 
-        <!-- 底部信息 -->
-        <footer>
-            <p>SuperNote © 2026 | 本地存储，安全可靠</p>
-        </footer>
+            <!-- 底部信息 -->
+            <footer>
+                <p>SuperNote © 2026 | 本地存储，安全可靠</p>
+            </footer>
+        </div>
     </div>
 
     <!-- 通知组件 -->
     <div id="notification" class="notification"></div>
 
+    <!-- 设置界面 -->
+    <div id="settingsOverlay" class="settings-overlay">
+        <div class="settings-modal">
+            <div class="settings-header">
+                <h2>设置</h2>
+                <button id="closeSettingsBtn" class="close-settings-btn">×</button>
+            </div>
+            
+            <div class="settings-section">
+                <h3>数据管理</h3>
+                
+                <div class="settings-item">
+                    <label>导出笔记</label>
+                    <p class="settings-info">将所有笔记导出为JSON文件</p>
+                    <div class="settings-btn-group">
+                        <button id="exportBtn" class="settings-btn export-btn">导出</button>
+                    </div>
+                </div>
+                
+                <div class="settings-item">
+                    <label>导入笔记</label>
+                    <p class="settings-info">从JSON文件导入笔记</p>
+                    <div class="settings-btn-group">
+                        <input type="file" id="importFile" class="file-input" accept=".json">
+                        <button id="importBtn" class="settings-btn import-btn">导入</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>关于</h3>
+                <div class="settings-item">
+                    <p class="settings-info">SuperNote vpre-1.0</p>
+                    <p class="settings-info">一个好用的在线记事本应用</p>
+                    <p class="settings-info">© 2026 SuperNote</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 元素引用
+        const noteTitle = document.getElementById('noteTitle');
         const noteContent = document.getElementById('noteContent');
         const saveBtn = document.getElementById('saveBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
         const charCount = document.getElementById('charCount');
         const notification = document.getElementById('notification');
+        const notesList = document.getElementById('notesList');
+        const newNoteBtn = document.getElementById('newNoteBtn');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+        
+        // 全局变量
+        let notes = [];
+        let currentNoteId = null;
 
         // 初始化：从本地存储加载笔记
         function init() {
             try {
-                const savedNote = localStorage.getItem('supernote-content');
-                if (savedNote) {
-                    noteContent.value = savedNote;
-                    updateCharCount();
+                const savedNotes = localStorage.getItem('supernote-notes');
+                if (savedNotes) {
+                    notes = JSON.parse(savedNotes);
+                    if (notes.length > 0) {
+                        currentNoteId = notes[0].id;
+                        loadNote(currentNoteId);
+                    } else {
+                        // 创建默认笔记
+                        createNewNote();
+                    }
+                } else {
+                    // 创建默认笔记
+                    createNewNote();
                 }
+                renderNotesList();
             } catch (error) {
                 console.error('加载笔记失败:', error);
+                showNotification('加载笔记失败', 'error');
             }
         }
 
-        // 保存笔记到本地存储
+        // 创建新笔记
+        function createNewNote() {
+            // 创建前保存当前笔记
+            if (currentNoteId) {
+                const currentNoteIndex = notes.findIndex(n => n.id === currentNoteId);
+                if (currentNoteIndex !== -1) {
+                    notes[currentNoteIndex] = {
+                        ...notes[currentNoteIndex],
+                        title: noteTitle.value || '无标题',
+                        content: noteContent.value,
+                        lastModified: new Date().toISOString()
+                    };
+                    saveNotes();
+                }
+            }
+            
+            const newNote = {
+                id: Date.now().toString(),
+                title: '新笔记',
+                content: '',
+                lastModified: new Date().toISOString()
+            };
+            
+            notes.unshift(newNote);
+            currentNoteId = newNote.id;
+            loadNote(currentNoteId);
+            saveNotes();
+            renderNotesList();
+            showNotification('新笔记已创建', 'success');
+        }
+
+        // 加载笔记
+        function loadNote(noteId) {
+            // 切换前保存当前笔记
+            if (currentNoteId && currentNoteId !== noteId) {
+                const currentNoteIndex = notes.findIndex(n => n.id === currentNoteId);
+                if (currentNoteIndex !== -1) {
+                    notes[currentNoteIndex] = {
+                        ...notes[currentNoteIndex],
+                        title: noteTitle.value || '无标题',
+                        content: noteContent.value,
+                        lastModified: new Date().toISOString()
+                    };
+                    saveNotes();
+                }
+            }
+            
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                noteTitle.value = note.title;
+                noteContent.value = note.content;
+                currentNoteId = noteId;
+                updateCharCount();
+                renderNotesList();
+            }
+        }
+
+        // 保存笔记
         function saveNote() {
             try {
-                localStorage.setItem('supernote-content', noteContent.value);
-                showNotification('笔记已保存', 'success');
+                if (currentNoteId) {
+                    const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+                    if (noteIndex !== -1) {
+                        notes[noteIndex] = {
+                            ...notes[noteIndex],
+                            title: noteTitle.value || '无标题',
+                            content: noteContent.value,
+                            lastModified: new Date().toISOString()
+                        };
+                        saveNotes();
+                        renderNotesList();
+                        showNotification('笔记已保存', 'success');
+                    }
+                }
             } catch (error) {
                 console.error('保存笔记失败:', error);
                 showNotification('保存失败', 'error');
             }
         }
 
-        // 清空笔记
+        // 保存所有笔记到本地存储
+        function saveNotes() {
+            try {
+                localStorage.setItem('supernote-notes', JSON.stringify(notes));
+            } catch (error) {
+                console.error('保存笔记到本地存储失败:', error);
+            }
+        }
+
+        // 清空当前笔记
         function clearNote() {
-            if (confirm('确定要清空笔记吗？此操作不可恢复。')) {
+            if (confirm('确定要清空当前笔记吗？此操作不可恢复。')) {
                 try {
-                    noteContent.value = '';
-                    localStorage.removeItem('supernote-content');
-                    updateCharCount();
-                    showNotification('笔记已清空', 'info');
+                    if (currentNoteId) {
+                        const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+                        if (noteIndex !== -1) {
+                            notes[noteIndex] = {
+                                ...notes[noteIndex],
+                                title: '无标题',
+                                content: '',
+                                lastModified: new Date().toISOString()
+                            };
+                            loadNote(currentNoteId);
+                            saveNotes();
+                            renderNotesList();
+                            showNotification('笔记已清空', 'info');
+                        }
+                    }
                 } catch (error) {
                     console.error('清空笔记失败:', error);
                     showNotification('清空失败', 'error');
@@ -284,7 +769,59 @@
             }
         }
 
+        // 删除笔记
+        function deleteNote(noteId) {
+            if (confirm('确定要删除此笔记吗？此操作不可恢复。')) {
+                try {
+                    const noteIndex = notes.findIndex(n => n.id === noteId);
+                    if (noteIndex !== -1) {
+                        notes.splice(noteIndex, 1);
+                        saveNotes();
+                        
+                        if (notes.length > 0) {
+                            if (currentNoteId === noteId) {
+                                currentNoteId = notes[0].id;
+                                loadNote(currentNoteId);
+                            }
+                        } else {
+                            createNewNote();
+                        }
+                        
+                        renderNotesList();
+                        showNotification('笔记已删除', 'success');
+                    }
+                } catch (error) {
+                    console.error('删除笔记失败:', error);
+                    showNotification('删除失败', 'error');
+                }
+            }
+        }
 
+        // 渲染笔记列表
+        function renderNotesList() {
+            notesList.innerHTML = '';
+            
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
+                noteItem.onclick = () => loadNote(note.id);
+                
+                const title = note.title || '无标题';
+                const preview = note.content.substring(0, 50) + (note.content.length > 50 ? '...' : '');
+                const date = new Date(note.lastModified).toLocaleString();
+                
+                noteItem.innerHTML = `
+                    <button class="delete-note-btn" onclick="event.stopPropagation(); deleteNote('${note.id}')">
+                        ×
+                    </button>
+                    <div class="note-title">${title}</div>
+                    <div class="note-preview">${preview}</div>
+                    <div class="note-date">${date}</div>
+                `;
+                
+                notesList.appendChild(noteItem);
+            });
+        }
 
         // 更新字符计数
         function updateCharCount() {
@@ -303,19 +840,144 @@
             }, 3000);
         }
 
+        // 显示设置界面
+        function showSettings() {
+            settingsOverlay.classList.add('show');
+        }
+
+        // 隐藏设置界面
+        function hideSettings() {
+            settingsOverlay.classList.remove('show');
+        }
+
+        // 导出笔记为JSON文件
+        function exportNotes() {
+            try {
+                // 保存当前笔记
+                if (currentNoteId) {
+                    const currentNoteIndex = notes.findIndex(n => n.id === currentNoteId);
+                    if (currentNoteIndex !== -1) {
+                        notes[currentNoteIndex] = {
+                            ...notes[currentNoteIndex],
+                            title: noteTitle.value || '无标题',
+                            content: noteContent.value,
+                            lastModified: new Date().toISOString()
+                        };
+                        saveNotes();
+                    }
+                }
+                
+                // 创建导出数据
+                const exportData = {
+                    version: 'pre-1.0',
+                    exportDate: new Date().toISOString(),
+                    notes: notes
+                };
+                
+                // 转换为JSON字符串
+                const jsonString = JSON.stringify(exportData, null, 2);
+                
+                // 创建Blob对象
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                
+                // 创建下载链接
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `supernote-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('笔记导出成功', 'success');
+            } catch (error) {
+                console.error('导出笔记失败:', error);
+                showNotification('导出失败', 'error');
+            }
+        }
+
+        // 导入笔记从JSON文件
+        function importNotes(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        
+                        // 验证导入数据格式
+                        if (importData.notes && Array.isArray(importData.notes)) {
+                            // 确认导入
+                            if (confirm(`确定要导入 ${importData.notes.length} 个笔记吗？这将替换当前所有笔记。`)) {
+                                notes = importData.notes;
+                                saveNotes();
+                                
+                                if (notes.length > 0) {
+                                    currentNoteId = notes[0].id;
+                                    loadNote(currentNoteId);
+                                } else {
+                                    createNewNote();
+                                }
+                                
+                                renderNotesList();
+                                showNotification('笔记导入成功', 'success');
+                                hideSettings();
+                            }
+                        } else {
+                            showNotification('导入文件格式不正确', 'error');
+                        }
+                    } catch (parseError) {
+                        console.error('解析JSON文件失败:', parseError);
+                        showNotification('解析文件失败', 'error');
+                    }
+                };
+                reader.onerror = function() {
+                    showNotification('读取文件失败', 'error');
+                };
+                reader.readAsText(file);
+            } catch (error) {
+                console.error('导入笔记失败:', error);
+                showNotification('导入失败', 'error');
+            }
+        }
+
         // 事件监听器
         saveBtn.addEventListener('click', saveNote);
         clearBtn.addEventListener('click', clearNote);
+        newNoteBtn.addEventListener('click', createNewNote);
         noteContent.addEventListener('input', updateCharCount);
+        noteTitle.addEventListener('input', updateCharCount);
+        
+        // 设置界面事件监听器
+        settingsBtn.addEventListener('click', showSettings);
+        closeSettingsBtn.addEventListener('click', hideSettings);
+        exportBtn.addEventListener('click', exportNotes);
+        importBtn.addEventListener('click', () => importFile.click());
+        importFile.addEventListener('change', importNotes);
+        
+        // 点击遮罩层关闭设置界面
+        settingsOverlay.addEventListener('click', (e) => {
+            if (e.target === settingsOverlay) {
+                hideSettings();
+            }
+        });
 
         // 自动保存功能（每30秒）
         setInterval(() => {
             try {
-                const currentContent = noteContent.value;
-                const savedContent = localStorage.getItem('supernote-content');
-                
-                if (currentContent !== savedContent) {
-                    saveNote();
+                if (currentNoteId) {
+                    const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+                    if (noteIndex !== -1) {
+                        const currentTitle = noteTitle.value || '无标题';
+                        const currentContent = noteContent.value;
+                        
+                        if (notes[noteIndex].title !== currentTitle || notes[noteIndex].content !== currentContent) {
+                            saveNote();
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('自动保存失败:', error);
